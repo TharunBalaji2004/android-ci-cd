@@ -32,13 +32,6 @@ android {
         jvmTarget = '1.8'
     }
 
-    sonarqube {
-        properties {
-            property 'sonar.projectKey', 'TharunBalaji2004_android-ci-cd'
-            property 'sonar.organization', 'TharunBalaji2004'
-            property 'sonar.host.url', 'https://sonarcloud.io'
-        }
-    }
 }
 
 dependencies {
