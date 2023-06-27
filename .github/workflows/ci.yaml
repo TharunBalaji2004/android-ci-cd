@@ -35,12 +35,6 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      # Gradle v8.0.0 requires java JDK v17
-      - name: Set up Java
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-
       - name: Run Lint
         run: ./gradlew lintDebug
 
@@ -58,7 +52,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run gradlew test
-        uses: ./gradlew test
+        run: ./gradlew test
 
       - name: Upload Unit Test report
         uses: actions/upload-artifact@v2
