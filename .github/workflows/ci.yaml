@@ -18,8 +18,18 @@ jobs:
       - name: Run sample script
         run: echo CI process started!
 
-  lint:
+  java-version:
     needs: [start]
+    runs-on: ubuntu-latest
+    steps:
+      # Gradle v8.0.0 requires java JDK v17
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+  lint:
+    needs: [java-version]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -39,3 +49,20 @@ jobs:
         with:
           name: lint.html
           path: app/build/reports/lint-results-debug.html
+
+  unit-tests:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Run gradlew test
+        uses: ./gradlew test
+
+      - name: Upload Unit Test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: unit_test_report
+          path: app/build/reports/test/testDebugUnitTest/
+
