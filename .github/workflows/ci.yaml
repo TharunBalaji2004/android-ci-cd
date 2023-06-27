@@ -18,77 +18,77 @@ jobs:
       - name: Run sample script
         run: echo CI process started!
 
-#  lint:
-#    needs: [start]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      # Gradle v8.0.0 requires java JDK v17
-#      - name: Set up Java JDK 17
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: '17'
-#
-#      - name: Run Lint
-#        run: ./gradlew lintDebug
-#
-#      - name: Upload Lint HTML test report
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: lint.html
-#          path: app/build/reports/lint-results-debug.html
-#
-#  unit-test:
-#    needs: [lint]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      # Gradle v8.0.0 requires java JDK v17
-#      - name: Set up Java JDK 17
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: '17'
-#
-#      - name: Run gradlew test
-#        run: ./gradlew test
-#
-#      - name: Upload Unit Test report
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: unit_test_report
-#          path: app/build/reports/tests/testDebugUnitTest/
-#
-#  instrumentation-test:
-#    needs: [unit-test]
-#    runs-on: macos-latest # MacOS runs faster
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      # Gradle v8.0.0 requires java JDK v17
-#      - name: Set up Java JDK 17
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: '17'
-#
-#      - name: Run espresso tests
-#        uses: reactivecircus/android-emulator-runner@v2 # Android emulator provided by github actions
-#        with:
-#          api-level: 29
-#          script: ./gradlew connectedCheck
-#
-#      - name: Upload Instrumentation Test report
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: instrumentation_test_report
-#          path: app/build/reports/androidTests/connected
+  lint:
+    needs: [start]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      # Gradle v8.0.0 requires java JDK v17
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+      - name: Run Lint
+        run: ./gradlew lintDebug
+
+      - name: Upload Lint HTML test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint.html
+          path: app/build/reports/lint-results-debug.html
+
+  unit-test:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      # Gradle v8.0.0 requires java JDK v17
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+      - name: Run gradlew test
+        run: ./gradlew test
+
+      - name: Upload Unit Test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: unit_test_report
+          path: app/build/reports/tests/testDebugUnitTest/
+
+  instrumentation-test:
+    needs: [unit-test]
+    runs-on: macos-latest # MacOS runs faster
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      # Gradle v8.0.0 requires java JDK v17
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+      - name: Run espresso tests
+        uses: reactivecircus/android-emulator-runner@v2 # Android emulator provided by github actions
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
+
+      - name: Upload Instrumentation Test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: instrumentation_test_report
+          path: app/build/reports/androidTests/connected
 
   static-code-analysis:
-    # needs: [instrumentation-test]
+    needs: [instrumentation-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -99,7 +99,28 @@ jobs:
         with:
           java-version: '17'
 
-      - name: SonarCloud Scan
+      - name: SonarCloud Scan # sonarcloud properties in gradle.properties file
         run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  package:
+    needs: [static-code-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+      - name: Build debug apk
+        uses: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: sample-app.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
