@@ -25,6 +25,9 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
+      - name: Build with Gradle
+        run: ./gradlew wrapper --gradle-version 7.0.2 build
+
       - name: Run Lint
         run: ./gradlew lintDebug
 
