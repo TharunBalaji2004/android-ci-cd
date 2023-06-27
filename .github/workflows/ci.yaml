@@ -19,7 +19,7 @@ jobs:
         run: echo CI process started!
 
   lint:
-    needs: [java-version]
+    needs: [start]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
