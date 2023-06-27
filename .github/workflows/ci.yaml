@@ -60,4 +60,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: unit_test_report
-          path: app/build/reports/test/testDebugUnitTest/
+          path: app/build/reports/tests/testDebugUnitTest/
