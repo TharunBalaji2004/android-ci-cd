@@ -9,11 +9,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  sample:
+  start:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
 
       - name: Run sample script
-        run: echo Hello there!
+        run: echo CI process started!
+
+  lint:
+    needs: [start]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Run Lint
+        uses: ./gradlew lintDebug
+
+      - name: Upload Lint HTML test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint.html
+          path: app/build/reports/lint-results-debug.html
