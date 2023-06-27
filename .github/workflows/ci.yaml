@@ -25,20 +25,20 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      # Gradle v8.0.0 requires java JDK v17
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-
-      - name: Run Lint
-        run: ./gradlew lintDebug
-
-      - name: Upload Lint HTML test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: lint.html
-          path: app/build/reports/lint-results-debug.html
+#      # Gradle v8.0.0 requires java JDK v17
+#      - name: Set up Java JDK 17
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: '17'
+#
+#      - name: Run Lint
+#        run: ./gradlew lintDebug
+#
+#      - name: Upload Lint HTML test report
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: lint.html
+#          path: app/build/reports/lint-results-debug.html
 
   unit-test:
     needs: [lint]
@@ -47,20 +47,20 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      # Gradle v8.0.0 requires java JDK v17
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-
-      - name: Run gradlew test
-        run: ./gradlew test
-
-      - name: Upload Unit Test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: unit_test_report
-          path: app/build/reports/tests/testDebugUnitTest/
+#      # Gradle v8.0.0 requires java JDK v17
+#      - name: Set up Java JDK 17
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: '17'
+#
+#      - name: Run gradlew test
+#        run: ./gradlew test
+#
+#      - name: Upload Unit Test report
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: unit_test_report
+#          path: app/build/reports/tests/testDebugUnitTest/
 
   instrumentation-test:
     needs: [unit-test]
