@@ -25,6 +25,11 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
       - name: Run Lint
         run: ./gradlew lintDebug
 
