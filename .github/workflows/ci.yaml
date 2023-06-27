@@ -18,13 +18,13 @@ jobs:
       - name: Run sample script
         run: echo CI process started!
 
-  lint:
-    needs: [start]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
+#  lint:
+#    needs: [start]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout the code
+#        uses: actions/checkout@v2
+#
 #      # Gradle v8.0.0 requires java JDK v17
 #      - name: Set up Java JDK 17
 #        uses: actions/setup-java@v1
@@ -39,14 +39,14 @@ jobs:
 #        with:
 #          name: lint.html
 #          path: app/build/reports/lint-results-debug.html
-
-  unit-test:
-    needs: [lint]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
+#
+#  unit-test:
+#    needs: [lint]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout the code
+#        uses: actions/checkout@v2
+#
 #      # Gradle v8.0.0 requires java JDK v17
 #      - name: Set up Java JDK 17
 #        uses: actions/setup-java@v1
@@ -61,14 +61,14 @@ jobs:
 #        with:
 #          name: unit_test_report
 #          path: app/build/reports/tests/testDebugUnitTest/
-
-  instrumentation-test:
-    needs: [unit-test]
-    runs-on: macos-latest # MacOS runs faster
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
+#
+#  instrumentation-test:
+#    needs: [unit-test]
+#    runs-on: macos-latest # MacOS runs faster
+#    steps:
+#      - name: Checkout the code
+#        uses: actions/checkout@v2
+#
 #      # Gradle v8.0.0 requires java JDK v17
 #      - name: Set up Java JDK 17
 #        uses: actions/setup-java@v1
@@ -88,7 +88,7 @@ jobs:
 #          path: app/build/reports/androidTests/connected
 
   static-code-analysis:
-    needs: [instrumentation-test]
+    # needs: [instrumentation-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -100,6 +100,6 @@ jobs:
           java-version: '17'
 
       - name: Sonarcloud Scan
-        run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew app:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
