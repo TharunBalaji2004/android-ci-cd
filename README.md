@@ -1,13 +1,13 @@
 ## Android CI/CD pipeline architecture
 
 <p align="center">
-  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d8ce9e0a-7e4c-4698-a555-ac8e512c81fb" height="180px" width="180px" />
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d8ce9e0a-7e4c-4698-a555-ac8e512c81fb" height="150px" width="150px" />
   &nbsp;&nbsp;
-  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b0483d4b-fb48-4c73-825a-cd92abada39e" height="150px" width="160px" />
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b0483d4b-fb48-4c73-825a-cd92abada39e" height="110px" width="120px" />
   &nbsp;&nbsp;
-  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/aa67c11e-6563-4189-85d8-3ca50d7dcb50" height="150px" width="150px" />
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/aa67c11e-6563-4189-85d8-3ca50d7dcb50" height="120px" width="120px" />
   &nbsp;&nbsp;
-  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d2fbfc7a-a42e-41dc-b5af-f44b945ab60d" height="180px" width="200px" />
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b88fdf60-1ca1-4c8d-a5be-9107367ff072" height="150px" width="200px" />
 </p>
 
 
