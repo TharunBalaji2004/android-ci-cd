@@ -56,6 +56,9 @@ jobs:
     name: Upload the signed artifact
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
       - name: Upload App bundle
         uses: actions/upload_artifact@v2
         with:
