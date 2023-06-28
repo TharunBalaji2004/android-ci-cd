@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v22
+        uses: android-actions/setup-android@v2
 
       # Gradle caching
       - uses: actions/cache@v2
