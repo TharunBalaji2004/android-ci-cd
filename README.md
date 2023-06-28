@@ -204,7 +204,7 @@ In order to perform Static Code Analaysis, we will be using [Sonarqube](https://
 **Step 5:** Add the token to GitHub secrets and title with desired token name.
 **Step 6:** Run `./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}` to allow sonarqube to scand and perform code analysis.
 
-Modify the `gradle.properties` as follows:
+Add the following code to `gradle.properties` as follows:
 ```properties
 ...
 # Sonarqube
