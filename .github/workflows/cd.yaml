@@ -40,17 +40,16 @@ jobs:
         run: ./gradlew app:bundleRelease --stacktrace
 
       - name: Sign app bundle
-        uses: r0adkll/sign-android-release@v1 # 3rd party tool
+        uses: r0adkll/sign-android-release@v1
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/bundle/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
-          alias: ${{ secrets.ALIAS }}
+          alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: "30.0.2"
-  
 
   upload:
     needs: [build]
@@ -62,4 +61,3 @@ jobs:
         with:
           name: signed-app-bundle
           path: app/build/outputs/bundle/release/app-release.aab
-
