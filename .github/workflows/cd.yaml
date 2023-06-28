@@ -40,25 +40,16 @@ jobs:
         run: ./gradlew app:bundleRelease --stacktrace
 
       - name: Sign app bundle
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/bundle/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "30.0.2"
+        run: |
+          jarsigner -keystore app/keystore.jks \
+          -storepass ${{ secrets.KEY_STORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }} \
+          app/build/outputs/bundle/release/app-release.aab ${{ secrets.ALIAS }}
 
   upload:
     needs: [build]
     name: Upload the signed artifact
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
       - name: Upload App bundle
         uses: actions/upload-artifact@v2
         with:
