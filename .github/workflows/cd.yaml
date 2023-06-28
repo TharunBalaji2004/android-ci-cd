@@ -43,7 +43,7 @@ jobs:
         run: |
           jarsigner -keystore app/keystore.jks \
           -storepass ${{ secrets.KEY_STORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }} \
-          app/build/outputs/bundle/release/app-release.aab ${{ secrets.ALIAS }}
+          app/build/outputs/bundle/release/app-release.aab ${{ secrets.KEY_ALIAS }}
 
   upload:
     needs: [build]
