@@ -177,7 +177,7 @@ instrumentation-test:
         java-version: '17'
 
     - name: Run espresso tests
-      uses: reactivecircus/android-emulator-runner@v2 # Android emulator provided by github actions
+      uses: reactivecircus/android-emulator-runner@v2 # 3rd party tool
       with:
         api-level: 29
         script: ./gradlew connectedCheck
@@ -191,3 +191,82 @@ instrumentation-test:
 
 ## 5. Static Code Analysis using Sonarqube
 
+🤔 _How can check my code quality using external tools ?_
+
+😎 _Static code analysis is a technique used to analyze the source code of a program without actually executing it. It helps identify potential bugs, security vulnerabilities, code smells, and other issues in the codebase. Static code analysis tools analyze the code for patterns, best practices, and potential issues based on predefined rules or heuristics_
+
+In order to perform Static Code Analaysis, we will be using [Sonarqube](https://www.sonarsource.com/products/sonarqube/) and SonarCloud. The minimum version required for sonar scanner is Java 11 and that is why you see a step to setup Java 11 jdk on the machine. To utilize Sonar scanner for analyzing code, a new account and project has to be created in [Sonarcloud](https://sonarcloud.io/) to integrate with GitHub Actions.
+
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine.  
+**Step 3:** Modify `gradle.properties` with sonarcloud project details.
+**Step 4:** Create a `SONAR_TOKEN` for the project in Sonarcloud website.
+**Step 5:** Add the token to GitHub secrets and title with desired token name.
+**Step 6:** Run `./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}` to allow sonarqube to scand and perform code analysis.
+
+Modify the `gradle.properties` as follows:
+```properties
+...
+# Sonarqube
+systemProp.sonar.sources=./src/main
+systemProp.sonar.host.url=https://sonarcloud.io/
+systemProp.sonar.organization=tharunbalaji2004  # As per your sonarcloud profile
+systemProp.sonar.projectKey=TharunBalaji2004_android-ci-cd  # As per your sonarcloud profile
+systemProp.sonar.projectName=android-ci-cd  # As per your sonarcloud profile
+```
+
+Running sonar cloud scan command in `ci.yaml` file:
+
+```yaml
+static-code-analysis:
+  needs: [instrumentation-test]
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    - name: Set up Java JDK 17
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+
+    - name: SonarCloud Scan # sonarcloud properties in gradle.properties file
+      run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## 6. Build APK package
+
+Reaching the last section of **Android CI** Pipeline 😎✅
+
+The last step of Android CI ends with building up `.apk` debug package after passing all tests along the pipeline.  
+
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
+**Step 3:** Once we have the codebase on the machine, run `./gradlew assembleDebug --stacktrace`  
+**Step 4:** Upload the apk packkage to GitHub as artifact
+
+```yaml
+package:
+  needs: [static-code-analysis]
+  name: Generate APK
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    - name: Set up Java JDK 17
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+
+    - name: Build debug APK
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: sample-app.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
+```
