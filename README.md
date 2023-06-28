@@ -188,3 +188,6 @@ instrumentation-test:
         name: instrumentation_test_report
         path: app/build/reports/androidTests/connected
 ```
+
+## 5. Static Code Analysis using Sonarqube
+
