@@ -2,11 +2,11 @@
 
 <p align="center">
   <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d8ce9e0a-7e4c-4698-a555-ac8e512c81fb" height="150px" width="150px" />
-  &nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b0483d4b-fb48-4c73-825a-cd92abada39e" height="110px" width="120px" />
-  &nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/aa67c11e-6563-4189-85d8-3ca50d7dcb50" height="120px" width="120px" />
-  &nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b88fdf60-1ca1-4c8d-a5be-9107367ff072" height="150px" width="200px" />
 </p>
 
