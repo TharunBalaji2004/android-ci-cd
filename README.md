@@ -19,6 +19,8 @@
 </p>
 <p align="center">
 <img alt="Gradle Plugin Portal" src="https://img.shields.io/gradle-plugin-portal/v/org.sonarqube?label=sonarqube%20-%20org.gradle">
+<img alt="Maven Central" src="https://img.shields.io/maven-central/v/junit/junit?label=junit4%20-%20maven">
+
 </p>
 
 ### What is meant by CI ?
