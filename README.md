@@ -76,6 +76,10 @@ jobs:
 
 ## 2. Perform Android Lint check
 
+🤔 _What is meant by Lint ?_
+
+😎 _The lint tool checks your Android project source files for potential bugs and optimization improvements for correctness, security, performance, usability, accessibility, and internationalization. Basically it's an basic code correction and suggestion tool_
+
 Now that our basic configuration is in place, we will add Lint check as our first job. Let us understand what the following configuration does.
 
 **Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
@@ -111,11 +115,13 @@ jobs:
 
 - **with** - it uploads the artifact as the specified name to the path
 
-🤔 _What is meant by Lint ?_
-
-😎 _The lint tool checks your Android project source files for potential bugs and optimization improvements for correctness, security, performance, usability, accessibility, and internationalization. Basically it's an basic code correction and suggestion tool_
-
 ## 3. Perform Android Unit Tests
+
+🤔 _What is meant by Unit Testing ?_
+
+😎 _Unit tests in Android are used to test individual units or components of an application in isolation. These tests focus on verifying the functionality of a specific class, method, or module without external dependencies._
+
+Unit Tests reference: https://developer.android.com/training/testing/local-tests
 
 Our second job would be to run the unit tests. This job will run after the `lint` job and that is why you see `needs: [lint]` in the below config.
 
@@ -125,45 +131,60 @@ Our second job would be to run the unit tests. This job will run after the `lin
 **Step 4:** Publish the test report folder as a github artifact
 
 ```yaml
-name: CI
+unit-test:
+  needs: [lint]
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    - name: Run tests
+      uses: ./gradlew test
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Run lint
-        uses: ./gradlew lintDebug
-
-      - name: Upload html test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: lint.html
-          path: app/build/reports/lint-results-debug.html
-
-  unit-test:
-    needs: [lint]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Run tests
-        uses: ./gradlew test
-
-      - name: Upload test report
-        uses: actions.upload-artifact@v2
-        with:
-          name: unit_test_report
-          path: app/build/reports/test/testDebugUnitTest/
+    - name: Upload test report
+      uses: actions.upload-artifact@v2
+      with:
+        name: unit_test_report
+        path: app/build/reports/test/testDebugUnitTest/
 ```
 
 - **needs** - the keyword states that the current job as to be executed only when the specified job is been completed _say lint_
+
+## 4. Perform Android Instrumentation Tests
+
+🤔 _What is meant by Instrumnetation Testing in Android ?_
+
+😎 _Instrumentation tests in Android are used to test the behavior of an application in a real device or emulator environment. These tests simulate user interactions and validate the integration between different components of the application. It also includes UI testing and functionality binding with UI_
+
+Our 3rd job would run Android instrumentation tests. We are running this job on mac-latest machine. That is because the modern Intel Atom (x86 and x86_64) emulators require hardware acceleration from the host to run fast. The macOS VM provided by GitHub Actions has HAXM installed so we are able to create a new AVD instance, launch an emulator with hardware acceleration, and run our Android tests directly on the VM.
+
+⚠️ **Important:** Since macOS machines hosted by GitHub consumes more time compared to Linux and Windows machine. Make sure that you don't consume more amount of time spending instrumentation test, exceeding free plan. Checkout this official page for more reference: [GitHub Actions Minute multipliers](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#minute-multipliers) 
+
+A 3rd party tool would be used for running Android Emulators `reactivecircus/android-emulator-runner@v2` and running the instrumentation tests using `./gradlew connectedCheck`
+
+```yaml
+instrumentation-test:
+  needs: [unit-test]
+  runs-on: macos-latest # MacOS runs faster
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    # Gradle v8.0.0 requires java JDK v17
+    - name: Set up Java JDK 17
+      uses: actions/setup-java@v1
+      with:
+        java-version: '17'
+
+    - name: Run espresso tests
+      uses: reactivecircus/android-emulator-runner@v2 # Android emulator provided by github actions
+      with:
+        api-level: 29
+        script: ./gradlew connectedCheck
+
+    - name: Upload Instrumentation Test report
+      uses: actions/upload-artifact@v2
+      with:
+        name: instrumentation_test_report
+        path: app/build/reports/androidTests/connected
+```
