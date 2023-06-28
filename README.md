@@ -82,10 +82,10 @@ jobs:
 
 Now that our basic configuration is in place, we will add Lint check as our first job. Let us understand what the following configuration does.
 
-**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
-**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
-**Step 3:** Once we have the codebase on the machine, run `./gradlew lintDebug`  
-**Step 4:** Publish the lint report as a github artifact
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine<br>
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine<br>
+**Step 3:** Once we have the codebase on the machine, run `./gradlew lintDebug`<br>
+**Step 4:** Publish the lint report as a github artifact<br>
 
 ```yaml
 name: CI
@@ -125,10 +125,10 @@ Unit Tests reference: https://developer.android.com/training/testing/local-tests
 
 Our second job would be to run the unit tests. This job will run after the `lint` job and that is why you see `needs: [lint]` in the below config.
 
-**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
-**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
-**Step 3:** Run `./gradlew test` will run the unit tests
-**Step 4:** Publish the test report folder as a github artifact
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine<br> 
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine <br> 
+**Step 3:** Run `./gradlew test` will run the unit tests<br>
+**Step 4:** Publish the test report folder as a github artifact<br>
 
 ```yaml
 unit-test:
@@ -197,12 +197,12 @@ instrumentation-test:
 
 In order to perform Static Code Analaysis, we will be using [Sonarqube](https://www.sonarsource.com/products/sonarqube/) and SonarCloud. The minimum version required for sonar scanner is Java 11 and that is why you see a step to setup Java 11 jdk on the machine. To utilize Sonar scanner for analyzing code, a new account and project has to be created in [Sonarcloud](https://sonarcloud.io/) to integrate with GitHub Actions.
 
-**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
-**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine.  
-**Step 3:** Modify `gradle.properties` with sonarcloud project details.
-**Step 4:** Create a `SONAR_TOKEN` for the project in Sonarcloud website.
-**Step 5:** Add the token to GitHub secrets and title with desired token name.
-**Step 6:** Run `./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}` to allow sonarqube to scand and perform code analysis.
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine<br>
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine<br>
+**Step 3:** Modify `gradle.properties` with sonarcloud project details<br>
+**Step 4:** Create a `SONAR_TOKEN` for the project in Sonarcloud website<br>
+**Step 5:** Add the token to GitHub secrets and title with desired token name<br>
+**Step 6:** Run `./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}` to allow sonarqube to scand and perform code analysis<br>
 
 Add the following code to `gradle.properties` as follows:
 ```properties
@@ -242,10 +242,10 @@ Reaching the last section of **Android CI** Pipeline 😎✅
 
 The last step of Android CI ends with building up `.apk` debug package after passing all tests along the pipeline.  
 
-**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine.  
-**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
-**Step 3:** Once we have the codebase on the machine, run `./gradlew assembleDebug --stacktrace`  
-**Step 4:** Upload the apk packkage to GitHub as artifact
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine<br>
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine<br>
+**Step 3:** Once we have the codebase on the machine, run `./gradlew assembleDebug --stacktrace` <br>
+**Step 4:** Upload the apk packkage to GitHub as artifact<br>
 
 ```yaml
 package:
