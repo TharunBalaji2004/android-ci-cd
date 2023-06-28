@@ -1,0 +1,59 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+jobs:
+  build:
+    name: Setup Environment and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v22
+
+      # Gradle caching
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # Generate App bundle
+      - name: Generate app bundle
+        run: ./gradlew app:bundleRelease --stacktrace
+
+      - name: Sign app bundle
+        run: |
+          jarsigner -keystore app/*.jks \
+          -storepass ${{ secrets.KEY_STORE_PASSWORD }} -keypass ${{ secrets.KEY_PASSWORD }} \
+          app/build/outputs/bundle/release/app-release.aab ${{ secrets.KEY_ALIAS }}
+  
+
+  upload:
+    needs: [build]
+    name: Upload the signed artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload App bundle
+        uses: actions/upload_artifact@v2
+        with:
+          name: signed-app-bundle
+          path: app/build/outputs/bundle/release/app-release.aab
+
