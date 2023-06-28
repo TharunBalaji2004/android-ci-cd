@@ -1,6 +1,17 @@
 ## Android CI/CD pipeline architecture
 
 <p align="center">
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d8ce9e0a-7e4c-4698-a555-ac8e512c81fb" height="180px" width="180px" />
+  &nbsp;&nbsp;
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b0483d4b-fb48-4c73-825a-cd92abada39e" height="150px" width="160px" />
+  &nbsp;&nbsp;
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/aa67c11e-6563-4189-85d8-3ca50d7dcb50" height="150px" width="150px" />
+  &nbsp;&nbsp;
+  <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/d2fbfc7a-a42e-41dc-b5af-f44b945ab60d" height="180px" width="200px" />
+</p>
+
+
+<p align="center">
 <img alt="GitHub" src="https://img.shields.io/github/license/TharunBalaji2004/android-ci-cd">
 <img alt="CI Badge" src="https://img.shields.io/badge/CI%20(main)-passing-brightgreen?logo=github"> 
 <img alt="Android Package" src="https://img.shields.io/badge/apk%20package-v1.0-brightgreen?logo=android">
@@ -20,6 +31,8 @@ CD stands for **_Continuous Delivery_**, which is an automated process of deploy
 
 ### CI/CD for Android App
 
+![Pasted image 20230626231334](https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b5456db2-a977-49c6-a616-a4714ce6410d)
+<p align="center"><i>(Figure: CI/CD Pipeline Architecture for Android)</i></p>
 Now let us design our CI/CD flow so that we are clear what we want to achieve. For any Android project I would recommend the following steps:
 
 - Android Lint Check
