@@ -272,3 +272,5 @@ package:
         name: sample-app.apk
         path: app/build/outputs/apk/debug/app-debug.apk
 ```
+
+🚧 Deployment to Playstore using GitHub Actions is underway 🚧
