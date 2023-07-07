@@ -60,7 +60,7 @@ on:
     branches: [main]
 
 jobs:
-  sample:
+  start:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -231,7 +231,7 @@ static-code-analysis:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-### 6. Build APK package
+### 6. Build Debug APK
 
 Reaching the last section of **Android CI** Pipeline 😎✅
 
@@ -243,7 +243,7 @@ The last step of Android CI ends with building up `.apk` debug package after pas
 **Step 4:** Upload the apk packkage to GitHub as artifact<br>
 
 ```yaml
-package:
+debug-apk:
   name: Generate Debug APK
   runs-on: ubuntu-latest
   steps:
@@ -280,6 +280,8 @@ After lots of testing and validating the debug apk, lets design our CD pipeline.
 > Functional testing for Android applications involves testing the application's functionality to ensure that it meets the desired requirements and behaves correctly. It also covers app UI testing, Navigation testing, Performance and Compatability Testing
 
 To perform functional testing for Android applications, you can use various tools and frameworks, such as Espresso, UI Automator, Appium, and Robolectric. These tools assist in automating the testing process and provide features for simulating user interactions, capturing test results, and generating reports. Also considering real-world scenarios and user workflows to ensure the application meets user expectations and delivers a positive user experience.
+
+🚧 Working on it 🚧
 
 ### 2. Build signed APK
 
@@ -327,7 +329,7 @@ apk:
       uses: actions/upload-artifact@v2
       with:
         name: sample-app-signed  # Artifact Name
-        path: app/build/outputs/apk/release/app-release-unsigned-signed.apk
+        path: app/build/outputs/apk/release/*.apk
 ```
 
 ### 3. Build signed AAB
@@ -381,15 +383,13 @@ bundle:
 
 ### 4. Deploy app using Google Play Console
 
-> For making a release to PlayStore, we need a service account json file, which is created from the playstore console. And Play Store publisher permission access, which is created from Google Cloud. Kindy refer this [article](https://www.skoumal.com/en/generate-json-key-for-google-play-deployment/) to create service account and grant permission for CD pipeline to deploy in play store
+> For making a release to PlayStore, we need a service account json file, which is created from Google Play Console. And Play Store publisher permission access, which is created from Google Cloud. Kindy refer this [article](https://www.skoumal.com/en/generate-json-key-for-google-play-deployment/) to create service account and grant permission for CD pipeline to deploy in play store
 
 After creating the service account `.json` file, upload it to GitHub secrets and specify the value in workflow file.
 
-**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine
-
-**Step 2:** Specify the service account json secret file
-
-**Step 3:** Using predefined action `r0adkll/upload-google-play@v1` to deploy app on playstore.
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine<br>
+**Step 2:** Specify the service account json secret file<br>
+**Step 3:** Using predefined action `r0adkll/upload-google-play@v1` to deploy app on playstore<br>
 
 ```yaml
 deploy:
@@ -409,4 +409,207 @@ deploy:
         whatsNewDirectory: whatsnew/
         mappingFile: app/build/outputs/mapping/release/mapping.txt
         inAppUpdatePriority: 5
+```
+
+# CI/CD compelete pipeline
+
+Complete Workflow file for CI pipeline `ci.yaml`
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      - name: Run sample script
+        uses: echo Hello, world
+
+  lint:
+    name: Perform lint check
+    needs: [start]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Cache Gradle
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+  
+      - name: Run lint
+        uses: ./gradlew lintDebug
+  
+      - name: Upload html test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint.html
+          path: app/build/reports/lint-results-debug.html
+
+  unit-test:
+    name: Perform Unit Testing
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      - name: Run tests
+        uses: ./gradlew test
+  
+      - name: Upload test report
+        uses: actions.upload-artifact@v2
+        with:
+          name: unit_test_report
+          path: app/build/reports/test/testDebugUnitTest/
+
+  instrumentation-test:
+    name: Perform Instrumentation Testing
+    needs: [unit-test]
+    runs-on: macos-latest # MacOS runs faster
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      # Gradle v8.0.0 requires java JDK v17
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+  
+      - name: Run espresso tests
+        uses: reactivecircus/android-emulator-runner@v2 # 3rd party tool
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
+  
+      - name: Upload Instrumentation Test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: instrumentation_test_report
+          path: app/build/reports/androidTests/connected
+
+  static-code-analysis:
+    name: Perform static code analysis
+    needs: [instrumentation-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+  
+      - name: SonarCloud Scan # sonarcloud properties in gradle.properties file
+        run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  debug-apk:
+    name: Generate Debug APK
+    needs: [static-code-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: '17'
+  
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+  
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: sample-app.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+```
+
+Complete Workflow file for CD pipeline `cd.yaml`
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_run:
+    workflows: ["ci"]
+    types:
+      - completed
+
+jobs:
+  apk:
+    name: Build Release signed APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+  
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+  
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+  
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "30.0.2"
+  
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: sample-app-signed  # Artifact Name
+          path: app/build/outputs/apk/release/*.apk 
+  
+  deploy:
+    name: Deploy release AAB on Playstore
+    needs: [apk]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create service_account.json
+        run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
+  
+      - name: Deploy to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service_account.json
+          packageName: ${{ github.event.inputs.app_id }}
+          releaseFiles: app/build/outputs/bundle/release/*.aab
+          track: internal
+          whatsNewDirectory: whatsnew/
+          mappingFile: app/build/outputs/mapping/release/mapping.txt
+          inAppUpdatePriority: 5
 ```
