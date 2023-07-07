@@ -79,7 +79,7 @@ jobs:
 
 ### 2. Perform Android Lint check
 
-🤔 _What is meant by Lint ?_
+🤔 _What is meant by Lint ?_ 
 
 😎 _The lint tool checks your Android project source files for potential bugs and optimization improvements for correctness, security, performance, usability, accessibility, and internationalization. Basically it's an basic code correction and suggestion tool_
 
@@ -161,7 +161,7 @@ unit-test:
 
 Our 3rd job would run Android instrumentation tests. We are running this job on mac-latest machine. That is because the modern Intel Atom (x86 and x86_64) emulators require hardware acceleration from the host to run fast. The macOS VM provided by GitHub Actions has HAXM installed so we are able to create a new AVD instance, launch an emulator with hardware acceleration, and run our Android tests directly on the VM.
 
-⚠️ **Important:** Since macOS machines hosted by GitHub consumes more time compared to Linux and Windows machine. Make sure that you don't consume more amount of time spending instrumentation test, exceeding free plan. Checkout this official page for more reference: [GitHub Actions Minute multipliers](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#minute-multipliers) 
+>⚠️ **Important:** Since macOS machines hosted by GitHub consumes more time compared to Linux and Windows machine. Make sure that you don't consume more amount of time spending instrumentation test, exceeding free plan. Checkout this official page for more reference: [GitHub Actions Minute multipliers](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#minute-multipliers) 
 
 A 3rd party tool would be used for running Android Emulators `reactivecircus/android-emulator-runner@v2` and running the instrumentation tests using `./gradlew connectedCheck`
 
@@ -274,4 +274,119 @@ package:
         path: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-🚧 Deployment to Playstore using GitHub Actions is underway 🚧
+# CD pipeline
+
+After lots of testing and validating the debug apk, lets design our CD pipeline. This involves creating release package to public users. I would recommend these methods:
+
+* Functional Testing
+* Build signed APK
+* Build signed AAB   
+* Deploy in Google Play Store
+    
+
+### 1. Functional Testing
+
+> *Functional testing for Android applications involves testing the application's functionality to ensure that it meets the desired requirements and behaves correctly. It also covers app UI testing, Navigation testing, Performance and Compatability Testing*
+
+To perform functional testing for Android applications, you can use various tools and frameworks, such as Espresso, UI Automator, Appium, and Robolectric. These tools assist in automating the testing process and provide features for simulating user interactions, capturing test results, and generating reports. Also considering real-world scenarios and user workflows to ensure the application meets user expectations and delivers a positive user experience.
+
+### 2. Build signed APK
+
+🤔 _Signing process of APKs_
+
+😎 _Signing an APK (Android Package) is the process of adding a digital signature to the APK file. The digital signature serves as a way to verify the authenticity and integrity of the APK and ensure that it has not been tampered with since it was signed. The signing process involves generating a private key and a corresponding public key certificate_
+
+Now lets create a new workflow `.yaml` file for CD pipeline, we will be building signed release `.apk` as out first job. Lets discuss about signing the apk:  
+
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine  
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
+**Step 3:** Once we have the codebase on the machine, run `./gradlew assembleRelease`  
+**Step 4:** Using `r0adkll/sign-android-release@v1` sign the app from secret variables
+**Step 5:** Publish the signed apk to Github artifact
+
+```yaml
+  apk:
+    name: Build Release signed APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "30.0.2"
+
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: sample-app-signed  # Artifact Name
+          path: app/build/outputs/apk/release/app-release-unsigned-signed.apk
+```
+
+### 3. Build signed AAB
+
+🤔 _What does Android Application Bundle(AAB) mean ?_
+
+😎 _AAB stands for Android App Bundle. It is a publishing format introduced by Google for Android applications, developers can use the AAB format to publish their apps on the Google Play Store. It also allows for more efficient updates and enables developers to take advantage of dynamic delivery features provided by the Google Play Store_
+
+Now lets create a new workflow `.yaml` file for CD pipeline, we will be building signed release `.aab` as out first job. Lets discuss about signing the bundle:  
+
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine  
+**Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
+**Step 3:** Once we have the codebase on the machine, run `./gradlew assembleRelease`  
+**Step 4:** Using `r0adkll/sign-android-release@v1` sign the app from secret variables
+**Step 5:** Publish the signed apk to Github artifact    
+
+```yaml
+  bundle:
+    name: Build Release AAB
+    needs: [start]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build Release AAB
+        run: ./gradlew bundleRelease
+
+      - name: Sign app bundle      
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "30.0.2"
+
+      - name: Upload Signed AAB
+        uses: actions/upload-artifact@v2
+        with:
+          name: sample-app-bundle  # Artifact Name
+          path: app/build/outputs/bundle/release/app-release.aab
+```
