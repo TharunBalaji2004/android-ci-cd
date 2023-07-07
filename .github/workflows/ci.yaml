@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
   
       - name: Run sample script
-        uses: echo Hello, world
+        run: echo Hello, world
 
   lint:
     name: Perform lint check
@@ -38,7 +38,7 @@ jobs:
         run: chmod +x ./gradlew
   
       - name: Run lint
-        uses: ./gradlew lintDebug
+        run: ./gradlew lintDebug
   
       - name: Upload html test report
         uses: actions/upload-artifact@v2
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v2
   
       - name: Run tests
-        uses: ./gradlew test
+        run: ./gradlew test
   
       - name: Upload test report
         uses: actions.upload-artifact@v2
