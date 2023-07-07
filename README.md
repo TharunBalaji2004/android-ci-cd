@@ -91,29 +91,21 @@ Now that our basic configuration is in place, we will add Lint check as our firs
 **Step 4:** Publish the lint report as a github artifact<br>
 
 ```yaml
-name: CI
+lint:
+  name: Perform lint check
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    - name: Run lint
+      uses: ./gradlew lintDebug
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Run lint
-        uses: ./gradlew lintDebug
-
-      - name: Upload html test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: lint.html
-          path: app/build/reports/lint-results-debug.html
+    - name: Upload html test report
+      uses: actions/upload-artifact@v2
+      with:
+        name: lint.html
+        path: app/build/reports/lint-results-debug.html
 ```
 
 - **with** - it uploads the artifact as the specified name to the path
@@ -135,7 +127,7 @@ Our second job would be to run the unit tests. This job will run after the `lin
 
 ```yaml
 unit-test:
-  needs: [lint]
+  name: Perform Unit Testing
   runs-on: ubuntu-latest
   steps:
     - name: Checkout the code
@@ -167,7 +159,7 @@ A 3rd party tool would be used for running Android Emulators `reactivecircus/and
 
 ```yaml
 instrumentation-test:
-  needs: [unit-test]
+  name: Perform Instrumentation Testing
   runs-on: macos-latest # MacOS runs faster
   steps:
     - name: Checkout the code
@@ -222,7 +214,7 @@ Running sonar cloud scan command in `ci.yaml` file:
 
 ```yaml
 static-code-analysis:
-  needs: [instrumentation-test]
+  name: Perform static code analysis
   runs-on: ubuntu-latest
   steps:
     - name: Checkout the code
@@ -252,8 +244,7 @@ The last step of Android CI ends with building up `.apk` debug package after pas
 
 ```yaml
 package:
-  needs: [static-code-analysis]
-  name: Generate APK
+  name: Generate Debug APK
   runs-on: ubuntu-latest
   steps:
     - name: Checkout the code
@@ -281,12 +272,12 @@ After lots of testing and validating the debug apk, lets design our CD pipeline.
 * Functional Testing
 * Build signed APK
 * Build signed AAB   
-* Deploy in Google Play Store
+* Deploy app using Google Play Console
     
 
 ### 1. Functional Testing
 
-> *Functional testing for Android applications involves testing the application's functionality to ensure that it meets the desired requirements and behaves correctly. It also covers app UI testing, Navigation testing, Performance and Compatability Testing*
+> Functional testing for Android applications involves testing the application's functionality to ensure that it meets the desired requirements and behaves correctly. It also covers app UI testing, Navigation testing, Performance and Compatability Testing
 
 To perform functional testing for Android applications, you can use various tools and frameworks, such as Espresso, UI Automator, Appium, and Robolectric. These tools assist in automating the testing process and provide features for simulating user interactions, capturing test results, and generating reports. Also considering real-world scenarios and user workflows to ensure the application meets user expectations and delivers a positive user experience.
 
@@ -302,42 +293,41 @@ Now lets create a new workflow `.yaml` file for CD pipeline, we will be building
 **Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
 **Step 3:** Once we have the codebase on the machine, run `./gradlew assembleRelease`  
 **Step 4:** Using `r0adkll/sign-android-release@v1` sign the app from secret variables
-**Step 5:** Publish the signed apk to Github artifact
 
 ```yaml
-  apk:
-    name: Build Release signed APK
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
+apk:
+  name: Build Release signed APK
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: '17'
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: '17'
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
 
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "30.0.2"
+    - name: Sign APK
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "30.0.2"
 
-      - name: Upload Signed APK
-        uses: actions/upload-artifact@v2
-        with:
-          name: sample-app-signed  # Artifact Name
-          path: app/build/outputs/apk/release/app-release-unsigned-signed.apk
+    - name: Upload Signed APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: sample-app-signed  # Artifact Name
+        path: app/build/outputs/apk/release/app-release-unsigned-signed.apk
 ```
 
 ### 3. Build signed AAB
@@ -352,41 +342,71 @@ Now lets create a new workflow `.yaml` file for CD pipeline, we will be building
 **Step 2:** `actions/checkout@v2` action checks out the codebase on the machine  
 **Step 3:** Once we have the codebase on the machine, run `./gradlew assembleRelease`  
 **Step 4:** Using `r0adkll/sign-android-release@v1` sign the app from secret variables
-**Step 5:** Publish the signed apk to Github artifact    
 
 ```yaml
-  bundle:
-    name: Build Release AAB
-    needs: [start]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
+bundle:
+  name: Build Release AAB
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the code
+      uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: '17'
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: '17'
 
-      - name: Build Release AAB
-        run: ./gradlew bundleRelease
+    - name: Build Release AAB
+      run: ./gradlew bundleRelease
 
-      - name: Sign app bundle      
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/bundle/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "30.0.2"
+    - name: Sign app bundle      
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/bundle/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "30.0.2"
 
-      - name: Upload Signed AAB
-        uses: actions/upload-artifact@v2
-        with:
-          name: sample-app-bundle  # Artifact Name
-          path: app/build/outputs/bundle/release/app-release.aab
+    - name: Upload Signed AAB
+      uses: actions/upload-artifact@v2
+      with:
+        name: sample-app-bundle  # Artifact Name
+        path: app/build/outputs/bundle/release/app-release.aab
+```
+
+### 4. Deploy app using Google Play Console
+
+> For making a release to PlayStore, we need a service account json file, which is created from the playstore console. And Play Store publisher permission access, which is created from Google Cloud. Kindy refer this [article](https://www.skoumal.com/en/generate-json-key-for-google-play-deployment/) to create service account and grant permission for CD pipeline to deploy in play store
+
+After creating the service account `.json` file, upload it to GitHub secrets and specify the value in workflow file.
+
+**Step 1:** `runs-on: ubuntu-latest` tells to run the job on latest ubuntu machine
+
+**Step 2:** Specify the service account json secret file
+
+**Step 3:** Using predefined action `r0adkll/upload-google-play@v1` to deploy app on playstore.
+
+```yaml
+deploy:
+  name: Deploy release AAB on Playstore
+  runs-on: ubuntu-latest
+  steps:
+    - name: Create service_account.json
+      run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
+
+    - name: Deploy to Play Store
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJson: service_account.json
+        packageName: ${{ github.event.inputs.app_id }}
+        releaseFiles: app/build/outputs/bundle/release/*.aab
+        track: internal
+        whatsNewDirectory: whatsnew/
+        mappingFile: app/build/outputs/mapping/release/mapping.txt
+        inAppUpdatePriority: 5
 ```
