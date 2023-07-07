@@ -48,7 +48,7 @@ Now let us design our CI pipeline flow so that we are clear what we want to achi
 
 ### 1. Setup GitHub Actions for repository
 
-To add GitHub Actions to your repository you need to create a yaml file `repo/.github/workflows/ci.yaml`
+To add GitHub Actions workflow file to your repository you need to create a yaml file `.github/workflows/ci.yaml`
 
 ```yaml
 name: CI
@@ -296,6 +296,8 @@ Now lets create a new workflow `.yaml` file for CD pipeline, we will be building
 **Step 3:** Once we have the codebase on the machine, run `./gradlew assembleRelease`  
 **Step 4:** Using `r0adkll/sign-android-release@v1` sign the app from secret variables
 
+Add GitHub Actions CD workflow file to your repository you need to create a yaml file `.github/workflows/cd.yaml`
+
 ```yaml
 apk:
   name: Build Release signed APK
@@ -411,208 +413,12 @@ deploy:
         inAppUpdatePriority: 5
 ```
 
-# CI/CD compelete pipeline
+Thats it! Congrats for deploying you Android app on Play Store 😀✅
 
-Complete Workflow file for CI pipeline `ci.yaml`
-```yaml
-name: CI
+| CI pipeline | CD pipeline |
+| :---: | :---: |
+| [ci.yaml](.github/worflows/ci.yaml) | [cd.yaml](.github/worflows/cd.yaml) |
 
-on:
-  push:
-    branches: [main]
-
-  pull_request:
-    branches: [main]
-
-  workflow_dispatch:
-
-jobs:
-  start:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      - name: Run sample script
-        uses: echo Hello, world
-
-  lint:
-    name: Perform lint check
-    needs: [start]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Cache Gradle
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle-
-
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
-  
-      - name: Run lint
-        uses: ./gradlew lintDebug
-  
-      - name: Upload html test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: lint.html
-          path: app/build/reports/lint-results-debug.html
-
-  unit-test:
-    name: Perform Unit Testing
-    needs: [lint]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      - name: Run tests
-        uses: ./gradlew test
-  
-      - name: Upload test report
-        uses: actions.upload-artifact@v2
-        with:
-          name: unit_test_report
-          path: app/build/reports/test/testDebugUnitTest/
-
-  instrumentation-test:
-    name: Perform Instrumentation Testing
-    needs: [unit-test]
-    runs-on: macos-latest # MacOS runs faster
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      # Gradle v8.0.0 requires java JDK v17
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-  
-      - name: Run espresso tests
-        uses: reactivecircus/android-emulator-runner@v2 # 3rd party tool
-        with:
-          api-level: 29
-          script: ./gradlew connectedCheck
-  
-      - name: Upload Instrumentation Test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: instrumentation_test_report
-          path: app/build/reports/androidTests/connected
-
-  static-code-analysis:
-    name: Perform static code analysis
-    needs: [instrumentation-test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-  
-      - name: SonarCloud Scan # sonarcloud properties in gradle.properties file
-        run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  debug-apk:
-    name: Generate Debug APK
-    needs: [static-code-analysis]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v1
-        with:
-          java-version: '17'
-  
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
-  
-      - name: Upload APK
-        uses: actions/upload-artifact@v2
-        with:
-          name: sample-app.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-```
-
-Complete Workflow file for CD pipeline `cd.yaml`
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_run:
-    workflows: ["ci"]
-    types:
-      - completed
-
-jobs:
-  apk:
-    name: Build Release signed APK
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-  
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: '17'
-  
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
-  
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "30.0.2"
-  
-      - name: Upload Signed APK
-        uses: actions/upload-artifact@v2
-        with:
-          name: sample-app-signed  # Artifact Name
-          path: app/build/outputs/apk/release/*.apk 
-  
-  deploy:
-    name: Deploy release AAB on Playstore
-    needs: [apk]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create service_account.json
-        run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
-  
-      - name: Deploy to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJson: service_account.json
-          packageName: ${{ github.event.inputs.app_id }}
-          releaseFiles: app/build/outputs/bundle/release/*.aab
-          track: internal
-          whatsNewDirectory: whatsnew/
-          mappingFile: app/build/outputs/mapping/release/mapping.txt
-          inAppUpdatePriority: 5
-```
+### References
+- [Demystifying Github Actions - proandroiddev.com](https://proandroiddev.com/android-ci-cd-pipeline-with-github-actions-demystifying-github-actions-83258e76a18f)
+- [Automate Android App Publishing on Play Store - medium.com](https://medium.com/@niraj_prajapati/automate-android-app-publishing-on-play-store-using-github-actions-554de7801c36)
