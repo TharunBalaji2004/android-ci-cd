@@ -14,7 +14,7 @@
 <p align="center">
 <img alt="GitHub" src="https://img.shields.io/github/license/TharunBalaji2004/android-ci-cd">
 <img alt="CI Badge" src="https://img.shields.io/badge/CI%20(main)-passing-brightgreen?logo=github"> 
-<img alt="Android Package" src="https://img.shields.io/badge/apk%20package-v1.0-brightgreen?logo=android">
+<img alt="CD Badge" src="https://img.shields.io/badge/CD%20(main)-passing-brightgreen?logo=github"> 
 <img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/TharunBalaji2004/android-ci-cd/main?color=%238A2BE2">
 </p>
 <p align="center">
