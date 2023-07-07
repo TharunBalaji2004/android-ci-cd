@@ -35,17 +35,18 @@ CD stands for **_Continuous Delivery_**, which is an automated process of deploy
 
 ![Pasted image 20230626231334](https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b5456db2-a977-49c6-a616-a4714ce6410d)
 <p align="center"><i>(Figure: CI/CD Pipeline Architecture for Android)</i></p>
-Now let us design our CI/CD flow so that we are clear what we want to achieve. For any Android project I would recommend the following steps:
+
+# CI pipeline
+
+Now let us design our CI pipeline flow so that we are clear what we want to achieve. For any Android project I would recommend the following steps:
 
 - Android Lint Check
 - Unit Tests
 - Instrumentation Tests
 - Static Code Analysis
-- Packaging
-- Functional Tests
-- Deployment
+- Build Debug apk (Packaging)
 
-## 1. Setup GitHub Actions for repository
+### 1. Setup GitHub Actions for repository
 
 To add GitHub Actions to your repository you need to create a yaml file `repo/.github/workflows/ci.yaml`
 
@@ -76,7 +77,7 @@ jobs:
 - **runs-on** - it specifies on which serves should the process be performed *say ubuntu*
 - **steps** **(name, uses)** - Each step has its own name and uses, and the first step should be to checkout the code
 
-## 2. Perform Android Lint check
+### 2. Perform Android Lint check
 
 🤔 _What is meant by Lint ?_
 
@@ -117,7 +118,7 @@ jobs:
 
 - **with** - it uploads the artifact as the specified name to the path
 
-## 3. Perform Android Unit Tests
+### 3. Perform Android Unit Tests
 
 🤔 _What is meant by Unit Testing ?_
 
@@ -152,7 +153,7 @@ unit-test:
 
 - **needs** - the keyword states that the current job as to be executed only when the specified job is been completed _say lint_
 
-## 4. Perform Android Instrumentation Tests
+### 4. Perform Android Instrumentation Tests
 
 🤔 _What is meant by Instrumnetation Testing in Android ?_
 
@@ -191,7 +192,7 @@ instrumentation-test:
         path: app/build/reports/androidTests/connected
 ```
 
-## 5. Static Code Analysis using Sonarqube
+### 5. Static Code Analysis using Sonarqube
 
 🤔 _How can check my code quality using external tools ?_
 
@@ -238,7 +239,7 @@ static-code-analysis:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## 6. Build APK package
+### 6. Build APK package
 
 Reaching the last section of **Android CI** Pipeline 😎✅
 
