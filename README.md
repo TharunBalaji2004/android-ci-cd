@@ -22,6 +22,8 @@
 <img alt="Maven Central" src="https://img.shields.io/maven-central/v/junit/junit?label=junit4%20-%20maven">
 
 </p>
+<br>
+Hello there! Android devs👋, This article how to develop and maintain easy building, flexible maintenance, automated deployment and other DevOps operations for android applications using GitHub Actions and deployment in Google Play Store! Lets go 🚀  
 
 ### What is meant by CI ?
 
