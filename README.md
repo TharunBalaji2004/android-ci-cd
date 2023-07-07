@@ -417,7 +417,7 @@ Thats it! Congrats for deploying you Android app on Play Store 😀✅
 
 | CI pipeline | CD pipeline |
 | :---: | :---: |
-| [ci.yaml](.github/worflows/ci.yaml) | [cd.yaml](.github/worflows/cd.yaml) |
+| [ci.yaml](.github/workflows/ci.yaml) | [cd.yaml](.github/workflows/cd.yaml) |
 
 ### References
 - [Demystifying Github Actions - proandroiddev.com](https://proandroiddev.com/android-ci-cd-pipeline-with-github-actions-demystifying-github-actions-83258e76a18f)
