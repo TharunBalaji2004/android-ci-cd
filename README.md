@@ -10,7 +10,6 @@
   <img src="https://github.com/TharunBalaji2004/android-ci-cd/assets/95350584/b88fdf60-1ca1-4c8d-a5be-9107367ff072" height="150px" width="200px" />
 </p>
 
-
 <p align="center">
 <img alt="GitHub" src="https://img.shields.io/github/license/TharunBalaji2004/android-ci-cd">
 <img alt="CI Badge" src="https://img.shields.io/badge/CI%20(main)-passing-brightgreen?logo=github"> 
@@ -23,7 +22,14 @@
 
 </p>
 <br>
-Hello there! Android devs👋, This article how to develop and maintain easy building, flexible maintenance, automated deployment and other DevOps operations for android applications using GitHub Actions and deployment in Google Play Store! Lets go 🚀  
+<p>
+  Hello there! Android devs👋, This article how to develop and maintain easy building, flexible maintenance, automated deployment and other DevOps operations for android applications using GitHub Actions and deployment in Google Play Store! Lets go 🚀  
+</p>
+
+
+<p>
+  Article on Hashnode: https://tharunbalaji2004.hashnode.dev/android-ci-cd
+</p>
 
 ### What is meant by CI ?
 
