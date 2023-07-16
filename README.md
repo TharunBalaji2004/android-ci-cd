@@ -415,10 +415,7 @@ deploy:
         serviceAccountJson: service_account.json
         packageName: ${{ github.event.inputs.app_id }}
         releaseFiles: app/build/outputs/bundle/release/*.aab
-        track: internal
-        whatsNewDirectory: whatsnew/
-        mappingFile: app/build/outputs/mapping/release/mapping.txt
-        inAppUpdatePriority: 5
+        track: production
 ```
 
 Thats it! Congrats for deploying you Android app on Play Store 😀✅
